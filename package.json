@@ -1,0 +1,26 @@
+{
+  "name": "strange-attractor-lab",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Interactive density-rendered strange attractor visualizer on Cloudflare Workers",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "npm run typecheck && vite build",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "cf-types": "wrangler types",
+    "deploy": "npm run build && wrangler deploy",
+    "check": "npm run test && npm run build && wrangler deploy --dry-run"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.3",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.16",
+    "vitest": "^4.1.8",
+    "wrangler": "^4.100.0"
+  }
+}

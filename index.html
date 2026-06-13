@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="An interactive density-rendered strange attractor visualizer."
+    />
+    <meta name="theme-color" content="#080604" />
+    <title>Strange Attractor Laboratory</title>
+  </head>
+  <body>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+
+    <main class="page-shell">
+      <header class="masthead">
+        <a class="brand" href="/" aria-label="Strange Attractor Laboratory home">
+          <span class="brand-mark">SA</span>
+          <span>
+            <strong>Strange Attractor</strong>
+            <small>Iterative systems laboratory</small>
+          </span>
+        </a>
+        <div class="live-badge">
+          <span class="live-dot"></span>
+          <span id="run-status">Accumulating</span>
+        </div>
+      </header>
+
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">De Jong attractor / density study 01</p>
+          <h1>Order, folded from <em>chaos.</em></h1>
+          <p class="lede">
+            One point. Four trigonometric terms. Millions of repeated steps.
+            Watch a bounded structure emerge from a path that never repeats.
+          </p>
+
+          <div class="equation-card" aria-label="Attractor equations">
+            <div class="equation">
+              <span class="equation-axis">x′</span>
+              <span>= sin(</span><b id="equation-a">1.51</b><span> · y) − cos(</span
+              ><b id="equation-b">−1.54</b><span> · x)</span>
+            </div>
+            <div class="equation">
+              <span class="equation-axis">y′</span>
+              <span>= sin(</span><b id="equation-c">1.36</b><span> · x) − cos(</span
+              ><b id="equation-d">−1.75</b><span> · y)</span>
+            </div>
+          </div>
+        </div>
+
+        <aside class="hero-note">
+          <span class="note-index">01</span>
+          <p>
+            Each bright filament marks a region revisited by the mathematical
+            path. Brighter means denser, not closer.
+          </p>
+        </aside>
+      </section>
+
+      <section class="laboratory" aria-label="Interactive attractor laboratory">
+        <div class="viewport-card">
+          <div class="viewport-topline">
+            <div>
+              <span class="section-kicker">Live accumulation buffer</span>
+              <strong>Density field</strong>
+            </div>
+            <div class="iteration-display">
+              <span id="iterations">0</span>
+              <small>iterations</small>
+            </div>
+          </div>
+
+          <div class="canvas-wrap">
+            <canvas id="attractor-canvas" aria-label="Live strange attractor visualization"></canvas>
+            <div class="canvas-grid"></div>
+            <div id="canvas-message" class="canvas-message" hidden></div>
+            <div class="axis-label axis-x">x</div>
+            <div class="axis-label axis-y">y</div>
+          </div>
+
+          <div class="viewport-footer">
+            <div class="stat">
+              <span>Rate</span>
+              <strong id="rate">0</strong>
+              <small>points / sec</small>
+            </div>
+            <div class="stat">
+              <span>Peak density</span>
+              <strong id="peak">0</strong>
+              <small>pixel hits</small>
+            </div>
+            <div class="density-key" aria-label="Density color key">
+              <span>rare</span>
+              <div class="gradient"></div>
+              <span>dense</span>
+            </div>
+          </div>
+        </div>
+
+        <aside class="control-panel">
+          <div class="panel-heading">
+            <div>
+              <span class="section-kicker">Equation controls</span>
+              <h2>Tune the system</h2>
+            </div>
+            <button id="restore-button" class="text-button" type="button">Restore</button>
+          </div>
+
+          <div class="controls">
+            <label class="control">
+              <span><b>a</b> x′ sine fold <output id="value-a">1.51</output></span>
+              <input data-param="a" type="range" min="-2.5" max="2.5" step="0.01" value="1.51" />
+            </label>
+            <label class="control">
+              <span><b>b</b> x′ cosine fold <output id="value-b">−1.54</output></span>
+              <input data-param="b" type="range" min="-2.5" max="2.5" step="0.01" value="-1.54" />
+            </label>
+            <label class="control">
+              <span><b>c</b> y′ sine fold <output id="value-c">1.36</output></span>
+              <input data-param="c" type="range" min="-2.5" max="2.5" step="0.01" value="1.36" />
+            </label>
+            <label class="control">
+              <span><b>d</b> y′ cosine fold <output id="value-d">−1.75</output></span>
+              <input data-param="d" type="range" min="-2.5" max="2.5" step="0.01" value="-1.75" />
+            </label>
+          </div>
+
+          <div class="button-grid">
+            <button id="pause-button" class="primary-button" type="button">
+              <span class="button-icon">Ⅱ</span>
+              <span id="pause-label">Pause</span>
+            </button>
+            <button id="reset-button" class="secondary-button" type="button">
+              Reset density
+            </button>
+            <button id="export-button" class="secondary-button wide" type="button">
+              Export PNG
+            </button>
+          </div>
+
+          <p class="panel-footnote">
+            Small coefficient changes can radically reshape the orbit. Every
+            change clears the buffer so a new structure can emerge.
+          </p>
+        </aside>
+      </section>
+
+      <section class="explanation" aria-labelledby="explanation-title">
+        <div class="explanation-heading">
+          <span class="section-kicker">How the image appears</span>
+          <h2 id="explanation-title">A path becomes a field.</h2>
+        </div>
+
+        <article class="explanation-card">
+          <span class="card-number">01</span>
+          <h3>The iterative loop</h3>
+          <p>
+            Begin at <code>(0, 0)</code>. Calculate the next coordinate, plot
+            it, then feed that result back into the same equations. The page
+            repeats this operation in high-volume batches.
+          </p>
+          <div class="mini-diagram loop-diagram">
+            <span>(x, y)</span><i>→</i><span>equations</span><i>→</i><span>(x′, y′)</span>
+            <b>↻</b>
+          </div>
+        </article>
+
+        <article class="explanation-card">
+          <span class="card-number">02</span>
+          <h3>Sensitive dependence</h3>
+          <p>
+            The nonlinear sine and cosine terms prevent a simple repeating
+            orbit. Nearby paths diverge, yet remain confined to a bounded
+            region: the signature of a strange attractor.
+          </p>
+          <div class="mini-diagram chaos-diagram" aria-hidden="true">
+            <i></i><i></i><i></i><i></i><i></i><i></i>
+          </div>
+        </article>
+
+        <article class="explanation-card">
+          <span class="card-number">03</span>
+          <h3>Density becomes color</h3>
+          <p>
+            Each pixel stores a hit count. Logarithmic normalization reveals
+            both rare veils and heavily visited ridges, mapping them from dark
+            red through orange to a cream-colored glow.
+          </p>
+          <div class="mini-diagram density-diagram" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </article>
+      </section>
+
+      <footer>
+        <span>Strange Attractor Laboratory</span>
+        <span>Rendered in your browser / served from Cloudflare Workers</span>
+      </footer>
+    </main>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
+
