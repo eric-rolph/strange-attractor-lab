@@ -5,15 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="An interactive density-rendered strange attractor visualizer."
+      content="An interactive, color-encoded strange attractor laboratory."
     />
     <meta name="theme-color" content="#080604" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='32' fill='%23080604'/%3E%3Ccircle cx='32' cy='32' r='27' fill='none' stroke='%23f4b765'/%3E%3Ctext x='32' y='38' text-anchor='middle' font-family='serif' font-size='20' fill='%23f4b765'%3ESA%3C/text%3E%3C/svg%3E"
+    />
     <title>Strange Attractor Laboratory</title>
   </head>
   <body>
-    <div class="ambient ambient-one"></div>
-    <div class="ambient ambient-two"></div>
-
     <main class="page-shell">
       <header class="masthead">
         <a class="brand" href="/" aria-label="Strange Attractor Laboratory home">
@@ -29,36 +30,27 @@
         </div>
       </header>
 
-      <section class="hero">
-        <div class="hero-copy">
-          <p class="eyebrow">De Jong attractor / density study 01</p>
-          <h1>Order, folded from <em>chaos.</em></h1>
-          <p class="lede">
-            One point. Four trigonometric terms. Millions of repeated steps.
-            Watch a bounded structure emerge from a path that never repeats.
-          </p>
-
-          <div class="equation-card" aria-label="Attractor equations">
-            <div class="equation">
-              <span class="equation-axis">x′</span>
-              <span>= sin(</span><b id="equation-a">1.51</b><span> · y) − cos(</span
-              ><b id="equation-b">−1.54</b><span> · x)</span>
-            </div>
-            <div class="equation">
-              <span class="equation-axis">y′</span>
-              <span>= sin(</span><b id="equation-c">1.36</b><span> · x) − cos(</span
-              ><b id="equation-d">−1.75</b><span> · y)</span>
-            </div>
+      <section class="orientation" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow">De Jong attractor / analytical color study</p>
+          <h1 id="page-title">A path becomes a field.</h1>
+        </div>
+        <div class="equation-card" aria-label="Live attractor equations">
+          <div class="equation">
+            <span class="equation-axis">x′</span>
+            <span>= sin(</span><b id="equation-a">1.51</b><span> · y) − cos(</span
+            ><b id="equation-b">−1.54</b><span> · x)</span>
+          </div>
+          <div class="equation">
+            <span class="equation-axis">y′</span>
+            <span>= sin(</span><b id="equation-c">1.36</b><span> · x) − cos(</span
+            ><b id="equation-d">−1.75</b><span> · y)</span>
           </div>
         </div>
-
-        <aside class="hero-note">
-          <span class="note-index">01</span>
-          <p>
-            Each bright filament marks a region revisited by the mathematical
-            path. Brighter means denser, not closer.
-          </p>
-        </aside>
+        <p class="orientation-note">
+          Lightness always shows visit density. Select a hue encoding to expose
+          another property of the same orbit.
+        </p>
       </section>
 
       <section class="laboratory" aria-label="Interactive attractor laboratory">
@@ -68,25 +60,17 @@
               <span id="viewport-kicker" class="section-kicker">Live accumulation buffer</span>
               <strong id="viewport-title">Density field</strong>
             </div>
-            <div class="viewport-modes" aria-label="Viewport controls">
-              <div class="segmented-control" role="group" aria-label="View mode">
-                <button id="field-view-button" class="mode-button is-active" type="button" aria-pressed="true">
-                  Field
-                </button>
-                <button id="orbit-view-button" class="mode-button" type="button" aria-pressed="false">
-                  Orbit
-                </button>
-              </div>
-              <button id="morph-button" class="mode-button is-active" type="button" aria-pressed="true">
-                Morph
+            <div class="segmented-control" role="group" aria-label="View mode">
+              <button id="field-view-button" class="mode-button is-active" type="button" aria-pressed="true">
+                Field
               </button>
-              <button id="journey-button" class="mode-button" type="button" aria-pressed="false">
-                <span id="journey-label">Auto journey</span>
+              <button id="orbit-view-button" class="mode-button" type="button" aria-pressed="false">
+                Orbit
               </button>
             </div>
             <div class="iteration-display">
               <span id="iterations">0</span>
-              <small>iterations</small>
+              <small>sampled steps</small>
             </div>
           </div>
 
@@ -101,20 +85,46 @@
           </div>
 
           <div class="viewport-footer">
-            <div class="stat">
-              <span>Rate</span>
+            <div class="measure">
+              <span>Coverage</span>
+              <strong id="coverage">0.00%</strong>
+              <small>visited pixels</small>
+            </div>
+            <div class="measure">
+              <span id="signal-label">Max revisit</span>
+              <strong id="signal-summary">0</strong>
+              <small id="signal-unit">pixel hits</small>
+            </div>
+            <div class="measure measure-secondary">
+              <span>Sampling rate</span>
               <strong id="rate">0</strong>
               <small>points / sec</small>
             </div>
-            <div class="stat">
-              <span>Peak density</span>
-              <strong id="peak">0</strong>
-              <small>pixel hits</small>
+
+            <div id="field-legend" class="encoding-legend">
+              <div class="legend-copy">
+                <strong id="legend-title">Visit density</strong>
+                <span id="legend-description">Sequential lightness and hue</span>
+              </div>
+              <div class="legend-scale">
+                <span id="legend-low">rare</span>
+                <div id="legend-gradient" class="legend-gradient is-density"></div>
+                <span id="legend-high">dense</span>
+              </div>
+              <p id="legend-note">Lightness and hue both show visit density.</p>
             </div>
-            <div class="density-key" aria-label="Density color key">
-              <span>rare</span>
-              <div class="gradient"></div>
-              <span>dense</span>
+
+            <div id="orbit-legend" class="encoding-legend" hidden>
+              <div class="legend-copy">
+                <strong>Trajectory age</strong>
+                <span>Delay-embedded point cloud</span>
+              </div>
+              <div class="legend-scale">
+                <span>early</span>
+                <div class="legend-gradient is-orbit"></div>
+                <span>late</span>
+              </div>
+              <p>Hue shows trajectory age; brightness and point size show depth.</p>
             </div>
           </div>
         </div>
@@ -122,95 +132,105 @@
         <aside class="control-panel">
           <div class="panel-heading">
             <div>
-              <span class="section-kicker">Equation controls</span>
-              <h2>Tune the system</h2>
+              <span class="section-kicker">Control surface</span>
+              <h2>Explore the system</h2>
             </div>
             <button id="restore-button" class="text-button" type="button">Restore</button>
           </div>
 
-          <div class="controls">
-            <label class="control">
-              <span><b>a</b> x′ sine fold <output id="value-a">1.51</output></span>
-              <input data-param="a" type="range" min="-2.5" max="2.5" step="0.01" value="1.51" />
-            </label>
-            <label class="control">
-              <span><b>b</b> x′ cosine fold <output id="value-b">−1.54</output></span>
-              <input data-param="b" type="range" min="-2.5" max="2.5" step="0.01" value="-1.54" />
-            </label>
-            <label class="control">
-              <span><b>c</b> y′ sine fold <output id="value-c">1.36</output></span>
-              <input data-param="c" type="range" min="-2.5" max="2.5" step="0.01" value="1.36" />
-            </label>
-            <label class="control">
-              <span><b>d</b> y′ cosine fold <output id="value-d">−1.75</output></span>
-              <input data-param="d" type="range" min="-2.5" max="2.5" step="0.01" value="-1.75" />
-            </label>
-          </div>
+          <section class="control-group" aria-labelledby="equation-controls-title">
+            <div class="group-heading">
+              <h3 id="equation-controls-title">Equation</h3>
+              <span>coefficients</span>
+            </div>
+            <div class="controls">
+              <label class="control">
+                <span><b>a</b> x′ sine fold <output id="value-a">1.51</output></span>
+                <input data-param="a" type="range" min="-2.5" max="2.5" step="0.01" value="1.51" />
+              </label>
+              <label class="control">
+                <span><b>b</b> x′ cosine fold <output id="value-b">−1.54</output></span>
+                <input data-param="b" type="range" min="-2.5" max="2.5" step="0.01" value="-1.54" />
+              </label>
+              <label class="control">
+                <span><b>c</b> y′ sine fold <output id="value-c">1.36</output></span>
+                <input data-param="c" type="range" min="-2.5" max="2.5" step="0.01" value="1.36" />
+              </label>
+              <label class="control">
+                <span><b>d</b> y′ cosine fold <output id="value-d">−1.75</output></span>
+                <input data-param="d" type="range" min="-2.5" max="2.5" step="0.01" value="-1.75" />
+              </label>
+            </div>
+          </section>
 
-          <div class="button-grid">
-            <button id="pause-button" class="primary-button" type="button">
-              <span class="button-icon">Ⅱ</span>
-              <span id="pause-label">Pause</span>
-            </button>
-            <button id="reset-button" class="secondary-button" type="button">
-              Reset density
-            </button>
-            <button id="export-button" class="secondary-button wide" type="button">
-              Export PNG
-            </button>
-          </div>
+          <section class="control-group" aria-labelledby="encoding-controls-title">
+            <div class="group-heading">
+              <h3 id="encoding-controls-title">Encoding</h3>
+              <span>hue variable</span>
+            </div>
+            <div class="encoding-grid" role="group" aria-label="Field color encoding">
+              <button class="encoding-button is-active" data-encoding="density" type="button" aria-pressed="true">
+                <strong>Density</strong><span>frequency</span>
+              </button>
+              <button class="encoding-button" data-encoding="speed" type="button" aria-pressed="false">
+                <strong>Speed</strong><span>step length</span>
+              </button>
+              <button class="encoding-button" data-encoding="curvature" type="button" aria-pressed="false">
+                <strong>Curvature</strong><span>signed turn</span>
+              </button>
+              <button class="encoding-button" data-encoding="direction" type="button" aria-pressed="false">
+                <strong>Direction</strong><span>travel angle</span>
+              </button>
+            </div>
+            <p id="encoding-note" class="group-note">
+              Frequency alone: rare paths stay dark; repeated paths build toward cream.
+            </p>
+          </section>
 
-          <p class="panel-footnote">
-            Small coefficient changes can radically reshape the orbit. With
-            Morph active, earlier structures fade as the next form emerges.
-          </p>
+          <section class="control-group" aria-labelledby="motion-controls-title">
+            <div class="group-heading">
+              <h3 id="motion-controls-title">Motion</h3>
+              <span>parameter time</span>
+            </div>
+            <div class="motion-grid">
+              <button id="morph-button" class="mode-button is-active" type="button" aria-pressed="true">
+                Morph changes
+              </button>
+              <button id="journey-button" class="mode-button" type="button" aria-pressed="false">
+                <span id="journey-label">Auto journey</span>
+              </button>
+            </div>
+          </section>
+
+          <section class="control-group action-group" aria-label="Laboratory actions">
+            <div class="button-grid">
+              <button id="pause-button" class="primary-button" type="button">
+                <span class="button-icon">Ⅱ</span>
+                <span id="pause-label">Pause</span>
+              </button>
+              <button id="reset-button" class="secondary-button" type="button">
+                Clear field
+              </button>
+              <button id="export-button" class="secondary-button wide" type="button">
+                Export PNG
+              </button>
+            </div>
+          </section>
         </aside>
       </section>
 
-      <section class="explanation" aria-labelledby="explanation-title">
-        <div class="explanation-heading">
-          <span class="section-kicker">How the image appears</span>
-          <h2 id="explanation-title">A path becomes a field.</h2>
-        </div>
-
-        <article class="explanation-card">
-          <span class="card-number">01</span>
-          <h3>The iterative loop</h3>
-          <p>
-            Begin at <code>(0, 0)</code>. Calculate the next coordinate, plot
-            it, then feed that result back into the same equations. The page
-            repeats this operation in high-volume batches.
-          </p>
-          <div class="mini-diagram loop-diagram">
-            <span>(x, y)</span><i>→</i><span>equations</span><i>→</i><span>(x′, y′)</span>
-            <b>↻</b>
-          </div>
+      <section class="reading-guide" aria-label="Reading the visualization">
+        <article>
+          <span class="section-kicker">Read density</span>
+          <p>Lightness is the stable reference. Bright ridges are repeatedly visited; dark veils are rare.</p>
         </article>
-
-        <article class="explanation-card">
-          <span class="card-number">02</span>
-          <h3>Sensitive dependence</h3>
-          <p>
-            The nonlinear sine and cosine terms prevent a simple repeating
-            orbit. Nearby paths diverge, yet remain confined to a bounded
-            region: the signature of a strange attractor.
-          </p>
-          <div class="mini-diagram chaos-diagram" aria-hidden="true">
-            <i></i><i></i><i></i><i></i><i></i><i></i>
-          </div>
+        <article>
+          <span class="section-kicker">Compare hue</span>
+          <p>Switch hue variables to reveal motion hidden inside the same spatial structure.</p>
         </article>
-
-        <article class="explanation-card">
-          <span class="card-number">03</span>
-          <h3>Density becomes color</h3>
-          <p>
-            Each pixel stores a hit count. Logarithmic normalization reveals
-            both rare veils and heavily visited ridges, mapping them from dark
-            red through orange to a cream-colored glow.
-          </p>
-          <div class="mini-diagram density-diagram" aria-hidden="true">
-            <span></span><span></span><span></span><span></span><span></span>
-          </div>
+        <article>
+          <span class="section-kicker">Test sensitivity</span>
+          <p>Move one coefficient slightly. Morph shows how rapidly a nearby system becomes another form.</p>
         </article>
       </section>
 

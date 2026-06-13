@@ -64,4 +64,4 @@
 - [x] Run `npm run check`.
 - [x] Browser-test Field, Orbit, drag, zoom, Morph, Auto journey, mobile layout, and console errors.
 - [x] Update README feature documentation.
-- [ ] Commit, push `main`, watch GitHub Actions complete, and verify the live Worker.
+- [x] Commit, push `main`, watch GitHub Actions complete, and verify the live Worker.

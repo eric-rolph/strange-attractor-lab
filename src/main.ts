@@ -1,5 +1,6 @@
 import type { AttractorParams } from "./attractor";
 import { DEFAULT_PARAMS } from "./attractor";
+import type { FieldEncoding } from "./density";
 import { OrbitRenderer } from "./orbit-renderer";
 import {
   JOURNEY_PRESETS,
@@ -15,6 +16,8 @@ type StatsMessage = {
   peak: number;
   rate: number;
   paused: boolean;
+  coverage: number;
+  meanSignal: number;
 };
 
 type ExportMessage = {
@@ -24,13 +27,76 @@ type ExportMessage = {
 
 type ViewMode = "field" | "orbit";
 
+const ENCODING_INFO: Record<
+  FieldEncoding,
+  {
+    description: string;
+    gradientClass: string;
+    high: string;
+    low: string;
+    note: string;
+    signalLabel: string;
+    signalUnit: string;
+    title: string;
+    viewportTitle: string;
+  }
+> = {
+  density: {
+    description: "Sequential lightness and hue",
+    gradientClass: "is-density",
+    high: "dense",
+    low: "rare",
+    note: "Lightness and hue both show visit density.",
+    signalLabel: "Max revisit",
+    signalUnit: "pixel hits",
+    title: "Visit density",
+    viewportTitle: "Density field",
+  },
+  speed: {
+    description: "Hue shows distance between steps",
+    gradientClass: "is-speed",
+    high: "fast",
+    low: "slow",
+    note: "Hue shows step length; lightness still shows visit density.",
+    signalLabel: "Mean speed",
+    signalUnit: "step length",
+    title: "Orbit speed",
+    viewportTitle: "Speed / density field",
+  },
+  curvature: {
+    description: "Diverging hue around a straight path",
+    gradientClass: "is-curvature",
+    high: "left turn",
+    low: "right turn",
+    note: "Hue shows signed turning angle; lightness still shows visit density.",
+    signalLabel: "Mean turn",
+    signalUnit: "signed degrees",
+    title: "Signed curvature",
+    viewportTitle: "Curvature / density field",
+  },
+  direction: {
+    description: "Cyclic hue around the direction circle",
+    gradientClass: "is-direction",
+    high: "+π",
+    low: "−π",
+    note: "Hue shows direction of travel; lightness still shows visit density.",
+    signalLabel: "Mean heading",
+    signalUnit: "signed degrees",
+    title: "Orbit direction",
+    viewportTitle: "Direction / density field",
+  },
+};
+
 const fieldCanvas = getElement<HTMLCanvasElement>("attractor-canvas");
 const orbitCanvas = getElement<HTMLCanvasElement>("orbit-canvas");
 const canvasWrap = getElement<HTMLDivElement>("canvas-wrap");
 const canvasMessage = getElement<HTMLDivElement>("canvas-message");
 const iterationsElement = getElement<HTMLSpanElement>("iterations");
 const rateElement = getElement<HTMLSpanElement>("rate");
-const peakElement = getElement<HTMLSpanElement>("peak");
+const coverageElement = getElement<HTMLElement>("coverage");
+const signalLabel = getElement<HTMLElement>("signal-label");
+const signalSummary = getElement<HTMLElement>("signal-summary");
+const signalUnit = getElement<HTMLElement>("signal-unit");
 const runStatus = getElement<HTMLSpanElement>("run-status");
 const pauseButton = getElement<HTMLButtonElement>("pause-button");
 const pauseLabel = getElement<HTMLSpanElement>("pause-label");
@@ -45,7 +111,19 @@ const journeyLabel = getElement<HTMLSpanElement>("journey-label");
 const orbitHint = getElement<HTMLDivElement>("orbit-hint");
 const viewportKicker = getElement<HTMLElement>("viewport-kicker");
 const viewportTitle = getElement<HTMLElement>("viewport-title");
+const fieldLegend = getElement<HTMLElement>("field-legend");
+const orbitLegend = getElement<HTMLElement>("orbit-legend");
+const legendTitle = getElement<HTMLElement>("legend-title");
+const legendDescription = getElement<HTMLElement>("legend-description");
+const legendLow = getElement<HTMLElement>("legend-low");
+const legendHigh = getElement<HTMLElement>("legend-high");
+const legendGradient = getElement<HTMLElement>("legend-gradient");
+const legendNote = getElement<HTMLElement>("legend-note");
+const encodingNote = getElement<HTMLElement>("encoding-note");
 const inputs = Array.from(document.querySelectorAll<HTMLInputElement>("[data-param]"));
+const encodingButtons = Array.from(
+  document.querySelectorAll<HTMLButtonElement>("[data-encoding]"),
+);
 const axisLabels = Array.from(document.querySelectorAll<HTMLElement>(".axis-label"));
 
 const numberFormat = new Intl.NumberFormat("en-US");
@@ -53,12 +131,22 @@ const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matc
 let params: AttractorParams = { ...DEFAULT_PARAMS };
 let paused = false;
 let view: ViewMode = "field";
+let encoding: FieldEncoding = "density";
 let morphEnabled = !reducedMotion;
 let morphFrame: number | undefined;
 let journeyEnabled = false;
 let journeyIndex = 1;
 let journeyTimer: number | undefined;
 let lastOrbitUpdate = 0;
+let latestStats: StatsMessage = {
+  type: "stats",
+  iterations: 0,
+  peak: 0,
+  rate: 0,
+  paused: false,
+  coverage: 0,
+  meanSignal: 0,
+};
 
 if (!("transferControlToOffscreen" in fieldCanvas)) {
   showMessage("This visualizer requires a browser with OffscreenCanvas support.");
@@ -86,6 +174,7 @@ orbitRenderer.updateParams(params);
 orbitRenderer.setAutoOrbit(!reducedMotion);
 
 setPressed(morphButton, morphEnabled);
+updateEncodingUI();
 if (!orbitRenderer.available) {
   orbitViewButton.disabled = true;
   orbitViewButton.title = "Orbit view requires WebGL2";
@@ -102,10 +191,12 @@ simulation.addEventListener("message", (event: MessageEvent<StatsMessage | Expor
   const message = event.data;
 
   if (message.type === "stats") {
+    latestStats = message;
     iterationsElement.textContent = compactNumber(message.iterations);
     iterationsElement.title = numberFormat.format(message.iterations);
     rateElement.textContent = compactNumber(message.rate);
-    peakElement.textContent = numberFormat.format(message.peak);
+    coverageElement.textContent = `${(message.coverage * 100).toFixed(2)}%`;
+    updateSignalSummary(message);
     updateRunStatus();
     return;
   }
@@ -128,6 +219,19 @@ for (const input of inputs) {
     } else {
       applyParams(target, "reset");
     }
+  });
+}
+
+for (const button of encodingButtons) {
+  button.addEventListener("click", () => {
+    const nextEncoding = button.dataset.encoding as FieldEncoding;
+    if (nextEncoding === encoding && view === "field") {
+      return;
+    }
+    encoding = nextEncoding;
+    simulation.postMessage({ type: "encoding", encoding });
+    updateEncodingUI();
+    setView("field");
   });
 }
 
@@ -318,15 +422,55 @@ function setView(nextView: ViewMode): void {
   for (const label of axisLabels) {
     label.hidden = orbiting;
   }
-  resetButton.textContent = orbiting ? "Reset camera" : "Reset density";
+  resetButton.textContent = orbiting ? "Reset camera" : "Clear field";
   viewportKicker.textContent = orbiting
     ? "Delay embedding / WebGL point cloud"
     : "Live accumulation buffer";
-  viewportTitle.textContent = orbiting ? "Delay-embedded orbit" : "Density field";
+  viewportTitle.textContent = orbiting
+    ? "Delay-embedded orbit"
+    : ENCODING_INFO[encoding].viewportTitle;
+  fieldLegend.hidden = orbiting;
+  orbitLegend.hidden = !orbiting;
   setPressed(fieldViewButton, !orbiting);
   setPressed(orbitViewButton, orbiting);
   orbitRenderer.setActive(orbiting);
   applyPauseState();
+}
+
+function updateEncodingUI(): void {
+  const info = ENCODING_INFO[encoding];
+  for (const button of encodingButtons) {
+    setPressed(button, button.dataset.encoding === encoding);
+  }
+  legendTitle.textContent = info.title;
+  legendDescription.textContent = info.description;
+  legendLow.textContent = info.low;
+  legendHigh.textContent = info.high;
+  legendNote.textContent = info.note;
+  legendGradient.className = `legend-gradient ${info.gradientClass}`;
+  signalLabel.textContent = info.signalLabel;
+  signalUnit.textContent = info.signalUnit;
+  encodingNote.textContent = info.note;
+  if (view === "field") {
+    viewportTitle.textContent = info.viewportTitle;
+  }
+  updateSignalSummary(latestStats);
+}
+
+function updateSignalSummary(stats: StatsMessage): void {
+  if (encoding === "density") {
+    signalSummary.textContent = numberFormat.format(stats.peak);
+  } else if (encoding === "speed") {
+    signalSummary.textContent = stats.meanSignal.toFixed(3);
+  } else if (encoding === "curvature") {
+    signalSummary.textContent = `${(stats.meanSignal * 180 / Math.PI)
+      .toFixed(1)
+      .replace("-", "−")}°`;
+  } else {
+    signalSummary.textContent = `${(stats.meanSignal * 180 / Math.PI)
+      .toFixed(1)
+      .replace("-", "−")}°`;
+  }
 }
 
 function applyPauseState(): void {
