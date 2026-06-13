@@ -57,5 +57,5 @@
 
 - [x] Run `npm run check`.
 - [x] Start the local Worker preview and verify it in the browser.
-- [ ] Create the GitHub repository and configure Cloudflare Actions secrets.
-- [ ] Push `main`, watch the Actions deployment complete, and verify the live Workers URL.
+- [x] Create the GitHub repository and configure Cloudflare Actions secrets.
+- [x] Push `main`, watch the Actions deployment complete, and verify the live Workers URL.
