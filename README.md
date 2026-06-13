@@ -9,7 +9,14 @@ y' = sin(1.36x) - cos(-1.75y)
 
 The browser runs millions of iterations in a dedicated Web Worker, accumulates pixel hit counts, and maps logarithmic density through a warm color gradient. The UI stays responsive while the image grows increasingly detailed.
 
-https://strange-attractor-lab.ericrolph.workers.dev/
+[Open the live laboratory](https://strange-attractor-lab.ericrolph.workers.dev/)
+
+## Motion modes
+
+- **Field** renders the high-detail 2D density accumulation.
+- **Orbit** turns the trajectory into a genuine 3D delay embedding. Drag to orbit and use the wheel or trackpad to zoom.
+- **Morph** eases slider changes through intermediate equation states while previous structures fade.
+- **Auto journey** moves through curated coefficient presets and can be stopped at any point for manual exploration.
 
 ## Local development
 
@@ -46,4 +53,3 @@ The token should have permission to edit Workers.
 - `src/simulation.worker.ts`: high-volume simulation and `OffscreenCanvas` rendering
 - `src/main.ts`: controls, statistics, resize handling, and export
 - `worker/index.ts`: Cloudflare Worker health endpoint and static asset delegation
-

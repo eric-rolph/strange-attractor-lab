@@ -18,6 +18,7 @@ type ResizeMessage = {
 type ParamsMessage = {
   type: "params";
   params: AttractorParams;
+  transition?: "reset" | "decay";
 };
 
 type PauseMessage = {
@@ -66,6 +67,20 @@ function resetBuffer(): void {
   lastStatsIterations = 0;
   lastStatsAt = performance.now();
   render(performance.now());
+}
+
+function decayBuffer(retention = 0.94): void {
+  let nextPeak = 0;
+
+  for (let index = 0; index < density.length; index += 1) {
+    const value = Math.floor(density[index] * retention);
+    density[index] = value;
+    if (value > nextPeak) {
+      nextPeak = value;
+    }
+  }
+
+  peak = nextPeak;
 }
 
 function resize(nextWidth: number, nextHeight: number): void {
@@ -183,7 +198,11 @@ scope.addEventListener("message", (event: MessageEvent<ControlMessage>) => {
     resize(message.width, message.height);
   } else if (message.type === "params") {
     params = message.params;
-    resetBuffer();
+    if (message.transition === "decay") {
+      decayBuffer();
+    } else {
+      resetBuffer();
+    }
   } else if (message.type === "pause") {
     paused = message.paused;
     scope.postMessage({ type: "stats", iterations, peak, rate: 0, paused });

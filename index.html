@@ -65,8 +65,24 @@
         <div class="viewport-card">
           <div class="viewport-topline">
             <div>
-              <span class="section-kicker">Live accumulation buffer</span>
-              <strong>Density field</strong>
+              <span id="viewport-kicker" class="section-kicker">Live accumulation buffer</span>
+              <strong id="viewport-title">Density field</strong>
+            </div>
+            <div class="viewport-modes" aria-label="Viewport controls">
+              <div class="segmented-control" role="group" aria-label="View mode">
+                <button id="field-view-button" class="mode-button is-active" type="button" aria-pressed="true">
+                  Field
+                </button>
+                <button id="orbit-view-button" class="mode-button" type="button" aria-pressed="false">
+                  Orbit
+                </button>
+              </div>
+              <button id="morph-button" class="mode-button is-active" type="button" aria-pressed="true">
+                Morph
+              </button>
+              <button id="journey-button" class="mode-button" type="button" aria-pressed="false">
+                <span id="journey-label">Auto journey</span>
+              </button>
             </div>
             <div class="iteration-display">
               <span id="iterations">0</span>
@@ -74,9 +90,11 @@
             </div>
           </div>
 
-          <div class="canvas-wrap">
+          <div id="canvas-wrap" class="canvas-wrap">
             <canvas id="attractor-canvas" aria-label="Live strange attractor visualization"></canvas>
+            <canvas id="orbit-canvas" aria-label="Interactive three-dimensional strange attractor orbit" hidden></canvas>
             <div class="canvas-grid"></div>
+            <div id="orbit-hint" class="orbit-hint" hidden>drag to orbit · wheel to zoom</div>
             <div id="canvas-message" class="canvas-message" hidden></div>
             <div class="axis-label axis-x">x</div>
             <div class="axis-label axis-y">y</div>
@@ -143,8 +161,8 @@
           </div>
 
           <p class="panel-footnote">
-            Small coefficient changes can radically reshape the orbit. Every
-            change clears the buffer so a new structure can emerge.
+            Small coefficient changes can radically reshape the orbit. With
+            Morph active, earlier structures fade as the next form emerges.
           </p>
         </aside>
       </section>
@@ -205,4 +223,3 @@
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
-
