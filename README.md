@@ -9,6 +9,8 @@ y' = sin(1.36x) - cos(-1.75y)
 
 The browser runs millions of iterations in a dedicated Web Worker, accumulates pixel hit counts, and maps logarithmic density through a warm color gradient. The UI stays responsive while the image grows increasingly detailed.
 
+https://strange-attractor-lab.ericrolph.workers.dev/
+
 ## Local development
 
 ```bash
