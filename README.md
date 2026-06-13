@@ -1,5 +1,9 @@
 # Strange Attractor Laboratory
 
+<a href="https://youtu.be/FJFmANohLs4" target="_blank">
+  <img src="https://img.youtube.com/vi/FJFmANohLs4/maxresdefault.jpg" alt="Watch the video" width="600" />
+</a>
+
 An interactive, density-rendered De Jong strange attractor:
 
 ```text
